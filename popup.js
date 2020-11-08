@@ -28,6 +28,7 @@ function renderAction(action, targetNode) {
     targetNode.appendChild(elm);
 }
 function renderState() {
+    console.log('rendering state for', state);
     const overview = document.getElementById('overview');
     const actionView = document.getElementById('action');
     const btnRowOverview = document.getElementById('btn-row-overview');
@@ -80,6 +81,10 @@ function renderState() {
         btnRowActionView.style.display = 'none';
         intervalElm.disabled = true;
     }
+    else {
+        btnRowActive.style.display = 'none';
+        intervalElm.disabled = false;
+    }
     intervalElm.value = `${state.intervalDuration}`;
     const query = { active: true, currentWindow: true };
     window.chrome.tabs.query(query, (tabs) => {
@@ -123,7 +128,8 @@ function installEventListeners() {
     const cancelAddActionButton = document.getElementById('cancel-add-action-btn');
     const intervalElm = document.getElementById('interval-input');
     const runButton = document.getElementById('run-btn');
-    if (!addActionButton || !toggleActionView || !cancelAddActionButton || !runButton) {
+    const stopButton = document.getElementById('stop-btn');
+    if (!addActionButton || !toggleActionView || !cancelAddActionButton || !runButton || !stopButton) {
         handleError();
         return;
     }
@@ -132,9 +138,11 @@ function installEventListeners() {
     addActionButton.addEventListener('click', addActionHandler);
     cancelAddActionButton.addEventListener('click', cancelAddActionHandler);
     intervalElm.addEventListener('blur', handleIntervalChange);
+    stopButton.addEventListener('click', handleStop);
 }
 function getDifferenceInSeconds() {
-    const end = new Date(state.lastRefresh || '').getTime() + state.intervalDuration * 1000;
+    const durationInSeconds = state.intervalDuration * 1000;
+    const end = new Date(state.lastRefresh || '').getTime() + durationInSeconds;
     const start = new Date().getTime();
     const diff = start - end;
     const diffInSeconds = Math.floor(diff / 1000 % 60);
@@ -142,7 +150,7 @@ function getDifferenceInSeconds() {
         return '0';
     }
     else {
-        return Math.abs(Math.floor(diff / 1000 % 60)).toString();
+        return (durationInSeconds - Math.floor(diff / 1000 % 60)).toString();
     }
 }
 function startTimer() {
@@ -151,6 +159,8 @@ function startTimer() {
         handleError();
         return;
     }
+    const diff = getDifferenceInSeconds();
+    timer.innerText = diff;
     window.setInterval(() => {
         const diff = getDifferenceInSeconds();
         timer.innerText = diff;
@@ -172,7 +182,7 @@ function handleRun() {
         startTimer();
         renderState();
         window.chrome.tabs.executeScript(selectedTab.id, {
-            file: `hello.js`
+            file: `reload.js`
         });
     });
 }
@@ -182,6 +192,10 @@ function handleIntervalChange(e) {
         state.intervalDuration = parseInt(e.target.value);
         renderState();
     }
+}
+function handleStop() {
+    state.isActive = false;
+    renderState();
 }
 function setup() {
     console.log('running setup');

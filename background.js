@@ -5,7 +5,7 @@ function backgroundSetup(id) {
         if (id && data[id] && data[id].isActive) {
             console.log('tab is active, starting reload script');
             window.chrome.tabs.executeScript(id, {
-                file: `hello.js`
+                file: `reload.js`
             });
         }
         else {

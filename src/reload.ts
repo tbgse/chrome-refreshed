@@ -3,7 +3,8 @@ console.log('running reload script!!');
 function handleInterval(id: number) {
   (<any>window).chrome.storage.local.get(`${id}`, function (data: any) {
     const state = data[id];
-    if (!state || !state.intervalDuration) return;
+    console.log(state);
+    if (!state || !state.intervalDuration || !state.isActive) return;
 
     console.log('starting main script with reload duration of', state.intervalDuration);
     window.setTimeout(() => {
@@ -15,13 +16,17 @@ function handleInterval(id: number) {
       //     console.log('found a match!');
       //   }
       // })
-      const now = new Date();
-      state.lastRefresh = now.toISOString();
-      const newState = {} as any;
-      newState[id] = state;
-      (<any>window).chrome.storage.local.set(newState);
+      (<any>window).chrome.storage.local.get(`${id}`, (data: any) => {
+        const state = data[id];
+        if (!state || !state.intervalDuration || !state.isActive) return;
 
-      window.location.reload();
+        const now = new Date();
+        state.lastRefresh = now.toISOString();
+        const newState = {} as any;
+        newState[id] = state;
+        (<any>window).chrome.storage.local.set(newState);
+        window.location.reload();
+      });
     }, state.intervalDuration * 1000);
   });
 }
