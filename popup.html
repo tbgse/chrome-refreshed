@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <link rel="stylesheet" href='style.css'/>
+</head>
+
+<body>
+  <div class='wrapper'>
+    <div class='label'>
+      Refreshed
+    </div>
+    <div id='overview'>
+      <div class='container'>
+        <label for='interval'>Refresh Interval (seconds)</label>
+        <input name='interval' value='30' id='interval-input'/>
+      </div>
+      <div class='action-container'>
+        <div class='action-empty-placeholder' id='action-placeholder'>No active actions</div>
+        <ul id='action-list'></ul>
+      </div>
+    </div>
+    <div id='action'>
+      <div class='container'>
+        <label for='selector'>Element Selector</label>
+        <input name='selector' id='css-selector-input'/>
+        <label for='action'>Action Type</label>
+        <select name='action'>
+          <option>Click</option>
+          <option>Alert</option>
+        </select>
+        <label for='action'>Stop after this action?</label>
+        <select name='action'>
+          <option>Stop after success</option>
+          <option>Only after failure</option>
+          <option>Never stop</option>
+        </select>
+      </div>
+    </div>
+    <div class='container container--alert' id='refresh-countdown'>
+      Next refresh in: <span id='timer'></span>
+    </div>
+    <div class='container'>
+      <div class='button-row' id='btn-row-active'>
+        <button class='btn btn--alert' id='stop-btn'>Stop</button>
+      </div>
+      <div class='button-row' id='btn-row-overview'>
+        <button class='btn btn--primary' id='run-btn'>Start</button>
+        <button class='btn btn--secondary' id='toggle-action-view-btn'>Add action</button>
+      </div>
+      <div class='button-row' id='btn-row-add-action'>
+        <button class='btn btn--primary' id='add-action-btn'>Add</button>
+        <button class='btn btn--secondary' id='cancel-add-action-btn'>Cancel</button>
+      </div>
+    </div>
+  </div>
+  <script src='popup.js'></script>
+</body>
+</html>

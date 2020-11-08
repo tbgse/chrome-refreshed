@@ -1,0 +1,140 @@
+body {
+  margin: 0;
+}
+
+ul {
+  margin: 0;
+  list-style: none;
+  padding: 0;
+}
+.wrapper {
+  min-width: 250px;
+}
+.container {
+  padding: 10px 20px;
+}
+.container--alert {
+  background:#4b6584;
+  color: #fff;
+  font-size: 10px;
+  padding: 5px 20px;
+  font-weight: 600;
+}
+.highlight {
+  color: #eb3b5a;
+  font-family: monospace;
+  font-weight: 600;
+}
+
+select,
+input {
+  border-radius: 4px;
+  border: 1px solid #c6c6c6;
+  margin-bottom: 5px;
+  padding: 10px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+input:disabled {
+  background: #d1d8e0;
+}
+
+label {
+  font-weight: 600;
+  display: block;
+}
+
+.btn {
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: 2px;
+}
+
+.btn--primary {
+  background: #20bf6b;
+}
+
+.btn--secondary {
+  background: #778ca3;
+}
+.btn--alert {
+  background: #eb3b5a;
+}
+
+.label {
+  background: #4b6584;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 20px;
+  color: #fff;
+  font-weight: 600;
+}
+
+.action-container {
+  padding: 10px 20px;
+  background: #d1d8e0;
+}
+
+.action-element {
+  background: #fff;
+  padding: 6px;
+  padding-right: 26px;
+  margin-bottom: 6px;
+  border-radius: 2px;
+  position: relative;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.1);
+}
+.remove-icon  {
+  width: 16px;
+  height: 16px;
+  position: absolute;
+  top: 0;
+  right: 6px;
+  bottom: 0;
+  cursor: pointer;
+  margin: auto;
+  opacity: 0.3;
+}
+.remove-icon:hover {
+  opacity: 0.8;
+}
+.action-element:last-child {
+  margin-bottom: 0;
+}
+
+.button-row {
+  display: flex;
+  width: 100%;
+}
+
+.button-row * {
+  flex-grow: 1;
+}
+
+.button-row .btn:first-child {
+  margin-right: 3px;
+}
+.button-row .btn:last-child {
+  margin-left: 3px;
+}
+.action-empty-placeholder {
+  display: flex;
+  padding: 20px;
+  width: 100%;
+  box-sizing: border-box;
+  justify-content: center;
+  align-items: center;
+  color: #778ca3;
+  font-weight: 600;
+}
+
+#refresh-countdown,
+#btn-row-active,
+#action,
+#btn-row-add-action {
+  display: none;
+}

@@ -1,0 +1,28 @@
+  {
+    "name": "Refreshed",
+    "version": "1.0",
+    "description": "Automatically refresh your chrome tab and monitor changes.",
+    "manifest_version": 2,
+    "browser_action": {
+      "default_popup": "popup.html"
+    },
+    "permissions": [
+      "tabs",
+      "storage",
+      "declarativeContent",
+      "http://*/",
+      "https://*/"
+    ],
+    "background": {
+      "scripts": [
+        "background.js"
+      ],
+      "persistent": false
+    },
+    "content_scripts": [{
+      "matches": ["http://*/*", "https://*/*"],
+      "js": [
+        "content.js"
+      ]
+    }]
+  }
