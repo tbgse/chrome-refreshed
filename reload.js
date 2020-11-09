@@ -8,14 +8,20 @@ function handleInterval(id) {
             return;
         console.log('starting main script with reload duration of', state.intervalDuration);
         window.setTimeout(() => {
-            // data.actions.forEach((action: Action) => {
-            //   const results = document.querySelectorAll(action.selector);
-            //   if (results.length === 0) {
-            //     console.log('no results found!');
-            //   } else {
-            //     console.log('found a match!');
-            //   }
-            // })
+            for (const action of state.actions) {
+                const results = document.querySelectorAll(action.selector);
+                if (results.length === 0) {
+                    console.log('no results found!');
+                }
+                else {
+                    const activeNode = results.item(0);
+                    if (action.type === 'click') {
+                        console.log('trying to click on element');
+                        console.log(activeNode);
+                        activeNode.click();
+                    }
+                }
+            }
             window.chrome.storage.local.get(`${id}`, (data) => {
                 const state = data[id];
                 if (!state || !state.intervalDuration || !state.isActive)
