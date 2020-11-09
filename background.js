@@ -3,6 +3,12 @@ function backgroundSetup(id) {
     console.log('loading state for tab', id);
     window.chrome.storage.local.get(`${id}`, function (data) {
         if (id && data[id] && data[id].isActive) {
+            const state = data[id];
+            const now = new Date();
+            state.lastRefresh = now.toISOString();
+            const newState = {};
+            newState[id] = state;
+            window.chrome.storage.local.set(newState);
             console.log('tab is active, starting reload script');
             window.chrome.tabs.executeScript(id, {
                 file: `reload.js`

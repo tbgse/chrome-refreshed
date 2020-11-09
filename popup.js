@@ -83,6 +83,7 @@ function renderState() {
     }
     else {
         btnRowActive.style.display = 'none';
+        refreshCountdown.style.display = 'none';
         intervalElm.disabled = false;
     }
     intervalElm.value = `${state.intervalDuration}`;
@@ -141,16 +142,16 @@ function installEventListeners() {
     stopButton.addEventListener('click', handleStop);
 }
 function getDifferenceInSeconds() {
-    const durationInSeconds = state.intervalDuration * 1000;
-    const end = new Date(state.lastRefresh || '').getTime() + durationInSeconds;
+    const end = new Date(state.lastRefresh || '').getTime() + state.intervalDuration;
     const start = new Date().getTime();
     const diff = start - end;
-    const diffInSeconds = Math.floor(diff / 1000 % 60);
-    if (diffInSeconds > 0) {
+    const diffInSeconds = state.intervalDuration - Math.floor(diff / 1000 % 60);
+    console.log(diffInSeconds);
+    if (diffInSeconds < 0) {
         return '0';
     }
     else {
-        return (durationInSeconds - Math.floor(diff / 1000 % 60)).toString();
+        return diffInSeconds.toString();
     }
 }
 function startTimer() {
@@ -162,6 +163,13 @@ function startTimer() {
     const diff = getDifferenceInSeconds();
     timer.innerText = diff;
     window.setInterval(() => {
+        const query = { active: true, currentWindow: true };
+        window.chrome.tabs.query(query, (tabs) => {
+            const selectedTab = tabs[0];
+            window.chrome.storage.local.get([`${selectedTab.id}`], function (data) {
+                state.lastRefresh = data[selectedTab.id].lastRefresh;
+            });
+        });
         const diff = getDifferenceInSeconds();
         timer.innerText = diff;
     }, 1000);
