@@ -30,7 +30,10 @@ function handleInterval(id: number) {
         const newState = {} as any;
         newState[id] = state;
         (<any>window).chrome.storage.local.set(newState);
-        window.location.reload();
+        console.log('trying to create notification');
+        (<any>window).chrome.runtime.sendMessage({ type: "notification", url: window.location.host });
+
+        // window.location.reload();
       });
     }, state.intervalDuration * 1000);
   });

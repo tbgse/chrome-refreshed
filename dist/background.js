@@ -28,4 +28,13 @@ window.chrome.runtime.onMessage.addListener(function (request, sender, sendRespo
         console.log('sending a tab id with', sender.tab.id);
         sendResponse(sender.tab.id);
     }
+    else if (request.type === 'notification') {
+        const d = new Date();
+        window.chrome.notifications.create(`found-${d.toISOString()}`, {
+            type: 'basic',
+            iconUrl: 'images/check-double-solid.svg',
+            title: "Element Found!",
+            message: `We found a result at ${request.url}`
+        });
+    }
 });
