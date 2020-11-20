@@ -26,5 +26,15 @@ function backgroundSetup(id: number) {
       title: "Element Found!", 
       message: `We found a result at ${request.url}` 
     });
+  } else if (request.type === 'refresh') {
+    const id = sender.tab.id;
+    console.log('refreshing from background script for tab', sender.tab.id);
+      (<any>window).chrome.storage.local.get(`${id}`, function (data: any) {
+      if (id && data[id] && data[id].isActive) {
+        window.setTimeout(() => {
+          (<any>window).chrome.tabs.reload(sender.tab.id, { bypassCache: true });
+        }, data[id].intervalDuration * 1000);
+      }
+  });
   }
 });

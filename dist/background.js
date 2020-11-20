@@ -30,4 +30,15 @@ window.chrome.runtime.onMessage.addListener(function (request, sender, sendRespo
             message: `We found a result at ${request.url}`
         });
     }
+    else if (request.type === 'refresh') {
+        const id = sender.tab.id;
+        console.log('refreshing from background script for tab', sender.tab.id);
+        window.chrome.storage.local.get(`${id}`, function (data) {
+            if (id && data[id] && data[id].isActive) {
+                window.setTimeout(() => {
+                    window.chrome.tabs.reload(sender.tab.id, { bypassCache: true });
+                }, data[id].intervalDuration * 1000);
+            }
+        });
+    }
 });

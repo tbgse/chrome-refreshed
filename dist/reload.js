@@ -46,9 +46,7 @@ async function handleInterval(id) {
             newState[id] = state;
             window.chrome.storage.local.set(newState);
             if (!shouldStop) {
-                window.setTimeout(() => {
-                    window.location.reload();
-                }, state.intervalDuration * 500);
+                window.chrome.runtime.sendMessage({ type: "refresh" });
             }
         });
     });
