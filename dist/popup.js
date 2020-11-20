@@ -22,7 +22,17 @@ function renderAction(action, targetNode) {
         state.actions = state.actions.filter(x => x.selector !== action.selector);
         renderState();
     });
-    const content = `find ${selectorElm.outerHTML} and <span class='highlight'>click</span>`;
+    let stopLabel = 'stop on success.';
+    if (action.stopCondition === 'never') {
+        stopLabel = 'continue.';
+    }
+    else if (action.stopCondition === 'failure') {
+        stopLabel = 'stop on failure.';
+    }
+    let actionLabel = action.type;
+    if (action.type === 'clickAlert')
+        actionLabel = 'alert & click';
+    const content = `find ${selectorElm.outerHTML} then <span class='highlight'>${actionLabel}</span> and <span class='highlight'>${stopLabel}</span>`;
     elm.innerHTML = content;
     elm.appendChild(removeBtn);
     targetNode.appendChild(elm);
@@ -101,7 +111,9 @@ function toggleActionViewHandler() {
 }
 function addActionHandler() {
     const selectorInputElm = document.getElementById('css-selector-input');
-    if (!selectorInputElm) {
+    const typeDropdown = document.getElementById('action-type-select');
+    const stopDropdown = document.getElementById('action-stop-select');
+    if (!selectorInputElm || !typeDropdown || !stopDropdown) {
         handleError();
         return;
     }
@@ -111,8 +123,8 @@ function addActionHandler() {
     }
     const newAction = {
         selector,
-        type: 'click',
-        shouldStop: true
+        type: typeDropdown.value,
+        stopCondition: stopDropdown.value
     };
     state.actions = [...state.actions, newAction];
     selectorInputElm.value = '';
@@ -162,12 +174,17 @@ function startTimer() {
     }
     const diff = getDifferenceInSeconds();
     timer.innerText = diff;
-    window.setInterval(() => {
+    const interval = window.setInterval(() => {
         const query = { active: true, currentWindow: true };
         window.chrome.tabs.query(query, (tabs) => {
             const selectedTab = tabs[0];
             window.chrome.storage.local.get([`${selectedTab.id}`], function (data) {
                 state.lastRefresh = data[selectedTab.id].lastRefresh;
+                if (!data[selectedTab.id].isActive) {
+                    window.clearInterval(interval);
+                    state.isActive = false;
+                    renderState();
+                }
             });
         });
         const diff = getDifferenceInSeconds();

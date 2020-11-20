@@ -8,8 +8,8 @@ type State = {
 
 type Action = {
   selector: string;
-  type: 'click' | 'alert';
-  shouldStop: boolean;
+  type: string;
+  stopCondition: string;
 }
 
 const state: State = {
@@ -37,7 +37,19 @@ function renderAction(action: Action, targetNode: HTMLElement) {
     state.actions = state.actions.filter(x => x.selector !== action.selector);
     renderState();
   });
-  const content = `find ${selectorElm.outerHTML} and <span class='highlight'>click</span>`
+
+  let stopLabel = 'stop on success.';
+  if (action.stopCondition === 'never') {
+    stopLabel = 'continue.'
+  } else if (action.stopCondition === 'failure') {
+    stopLabel = 'stop on failure.'
+  }
+
+  let actionLabel = action.type;
+  if (action.type === 'clickAlert') actionLabel = 'alert & click'
+
+  const content = `find ${selectorElm.outerHTML} then <span class='highlight'>${actionLabel}</span> and <span class='highlight'>${stopLabel}</span>`;
+  
   elm.innerHTML = content;
   elm.appendChild(removeBtn);
   targetNode.appendChild(elm);
@@ -125,7 +137,10 @@ function toggleActionViewHandler () {
 
 function addActionHandler () {
   const selectorInputElm =  document.getElementById('css-selector-input') as HTMLInputElement;
-  if (!selectorInputElm) {
+  const typeDropdown = document.getElementById('action-type-select') as HTMLSelectElement;
+  const stopDropdown = document.getElementById('action-stop-select') as HTMLInputElement;
+
+  if (!selectorInputElm || !typeDropdown || !stopDropdown) {
     handleError()
     return;
   }
@@ -137,8 +152,8 @@ function addActionHandler () {
 
   const newAction: Action = {
     selector,
-    type: 'click',
-    shouldStop: true
+    type: typeDropdown.value,
+    stopCondition: stopDropdown.value
   }
 
   state.actions = [...state.actions, newAction];
@@ -197,12 +212,17 @@ function startTimer() {
   const diff = getDifferenceInSeconds();
   timer.innerText = diff;
 
-  window.setInterval(() => {
+  const interval = window.setInterval(() => {
     const query = { active: true, currentWindow: true };
     (<any>window).chrome.tabs.query(query, (tabs: any[]) => {
       const selectedTab = tabs[0];
       (<any>window).chrome.storage.local.get([`${selectedTab.id}`], function (data: any) {
         state.lastRefresh = data[selectedTab.id].lastRefresh;
+        if (!data[selectedTab.id].isActive) {
+          window.clearInterval(interval);
+          state.isActive = false;
+          renderState();
+        }
       });
     });
     const diff = getDifferenceInSeconds();

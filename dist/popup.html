@@ -25,15 +25,16 @@
         <label for='selector'>Element Selector</label>
         <input name='selector' id='css-selector-input'/>
         <label for='action'>Action Type</label>
-        <select name='action'>
-          <option>Click</option>
-          <option>Alert</option>
+        <select name='action' id='action-type-select'>
+          <option value='click'>Click</option>
+          <option value='alert'>Alert</option>
+          <option value='clickAlert'>Alert + Click</option>
         </select>
         <label for='action'>Stop after this action?</label>
-        <select name='action'>
-          <option>Stop after success</option>
-          <option>Only after failure</option>
-          <option>Never stop</option>
+          <select name='action' id='action-stop-select'>
+          <option value='success'>Stop after success</option>
+          <option value='failure'>Only after failure</option>
+          <option value='never'>Never stop</option>
         </select>
       </div>
     </div>

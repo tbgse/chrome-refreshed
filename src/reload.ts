@@ -1,41 +1,59 @@
 console.log('running reload script!!');
 
-function handleInterval(id: number) {
-  (<any>window).chrome.storage.local.get(`${id}`, function (data: any) {
+function sleep(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function handleInterval(id: number) {
+  (<any>window).chrome.storage.local.get(`${id}`, async function (data: any) {
     const state = data[id];
     console.log(state);
     if (!state || !state.intervalDuration || !state.isActive) return;
 
     console.log('starting main script with reload duration of', state.intervalDuration);
-    window.setTimeout(() => {
+      let shouldStop = false;
+      await sleep(50);
       for (const action of state.actions) {
+        const d = new Date();
+        console.log(`loop iteration ${d.toISOString()}`);
         const results = document.querySelectorAll(action.selector);
         if (results.length === 0) {
           console.log('no results found!');
+          if (action.stopCondition === 'failure') {
+            shouldStop = true;
+          }
         } else {
+          console.log(results);
+          if (action.stopCondition === 'success') {
+            shouldStop = true;
+          }
           const activeNode = results.item(0);
-          if (action.type === 'click') {
-            console.log('trying to click on element');
-            console.log(activeNode);
+          if (action.type === 'click' || action.type === 'clickAlert') {
             activeNode.click();
           }
+          if (action.type === 'clickAlert' || action.type === 'alert') {
+            (<any>window).chrome.runtime.sendMessage({ type: "notification", url: window.location.host });
+          }
         }
+        await sleep(50);
       }
+
       (<any>window).chrome.storage.local.get(`${id}`, (data: any) => {
         const state = data[id];
         if (!state || !state.intervalDuration || !state.isActive) return;
 
         const now = new Date();
         state.lastRefresh = now.toISOString();
+        state.isActive = !shouldStop;
         const newState = {} as any;
         newState[id] = state;
         (<any>window).chrome.storage.local.set(newState);
-        console.log('trying to create notification');
-        (<any>window).chrome.runtime.sendMessage({ type: "notification", url: window.location.host });
-
-        // window.location.reload();
+        if (!shouldStop) {
+          window.setTimeout(() => {
+            window.location.reload();
+          }, state.intervalDuration * 500);
+        }
       });
-    }, state.intervalDuration * 1000);
   });
 }
 
