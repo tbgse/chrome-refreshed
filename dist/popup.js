@@ -1,13 +1,12 @@
 "use strict";
 const state = {
     intervalDuration: 30,
-    lastRefresh: null,
     isActive: false,
     visibleContent: 'overview',
     actions: []
 };
-function handleError() {
-    console.error('something went wrong!');
+function handleError(err) {
+    console.error(`something went wrong! ${err}`);
 }
 function renderAction(action, targetNode) {
     const elm = document.createElement('li');
@@ -48,7 +47,6 @@ function renderState() {
     const actionList = document.getElementById('action-list');
     const refreshCountdown = document.getElementById('refresh-countdown');
     const intervalElm = document.getElementById('interval-input');
-    const timer = document.getElementById('timer');
     if (!overview ||
         !actionView ||
         !btnRowActionView ||
@@ -57,9 +55,8 @@ function renderState() {
         !actionPlaceholder ||
         !refreshCountdown ||
         !btnRowActive ||
-        !intervalElm ||
-        !timer) {
-        handleError();
+        !intervalElm) {
+        handleError('missing element in render state');
         return;
     }
     if (state.visibleContent === 'overview') {
@@ -114,7 +111,7 @@ function addActionHandler() {
     const typeDropdown = document.getElementById('action-type-select');
     const stopDropdown = document.getElementById('action-stop-select');
     if (!selectorInputElm || !typeDropdown || !stopDropdown) {
-        handleError();
+        handleError('missing an element when adding action handlers');
         return;
     }
     const selector = selectorInputElm.value.trim();
@@ -143,7 +140,7 @@ function installEventListeners() {
     const runButton = document.getElementById('run-btn');
     const stopButton = document.getElementById('stop-btn');
     if (!addActionButton || !toggleActionView || !cancelAddActionButton || !runButton || !stopButton) {
-        handleError();
+        handleError('Missing element when installing event listeners');
         return;
     }
     toggleActionView.addEventListener('click', toggleActionViewHandler);
@@ -153,48 +150,11 @@ function installEventListeners() {
     intervalElm.addEventListener('blur', handleIntervalChange);
     stopButton.addEventListener('click', handleStop);
 }
-function getDifferenceInSeconds() {
-    const end = new Date(state.lastRefresh || '').getTime() + state.intervalDuration;
-    const start = new Date().getTime();
-    const diff = start - end;
-    const diffInSeconds = state.intervalDuration - Math.floor(diff / 1000 % 60);
-    console.log(diffInSeconds);
-    if (diffInSeconds < 0) {
-        return '0';
-    }
-    else {
-        return diffInSeconds.toString();
-    }
-}
-function startTimer() {
-    const timer = document.getElementById('timer');
-    if (!timer) {
-        handleError();
-        return;
-    }
-    const diff = getDifferenceInSeconds();
-    timer.innerText = diff;
-    const interval = window.setInterval(() => {
-        const query = { active: true, currentWindow: true };
-        window.chrome.tabs.query(query, (tabs) => {
-            const selectedTab = tabs[0];
-            window.chrome.storage.local.get([`${selectedTab.id}`], function (data) {
-                state.lastRefresh = data[selectedTab.id].lastRefresh;
-                if (!data[selectedTab.id].isActive) {
-                    window.clearInterval(interval);
-                    state.isActive = false;
-                    renderState();
-                }
-            });
-        });
-        const diff = getDifferenceInSeconds();
-        timer.innerText = diff;
-    }, 1000);
-}
 function handleRun() {
+    console.log('starting run');
     const intervalElm = document.getElementById('interval-input');
     if (!intervalElm) {
-        handleError();
+        handleError('did not find interval elm when starting a run');
         return;
     }
     const query = { active: true, currentWindow: true };
@@ -202,9 +162,6 @@ function handleRun() {
         const selectedTab = tabs[0];
         state.isActive = true;
         console.log('updating the active tab id', state);
-        const now = new Date();
-        state.lastRefresh = now.toISOString();
-        startTimer();
         renderState();
         window.chrome.tabs.executeScript(selectedTab.id, {
             file: `reload.js`
@@ -233,9 +190,6 @@ function setup() {
         window.chrome.storage.local.get([`${selectedTab.id}`], function (data) {
             console.log(data);
             Object.assign(state, data[selectedTab.id]);
-            if (state.isActive) {
-                startTimer();
-            }
             renderState();
         });
     });

@@ -12,7 +12,7 @@ async function handleInterval(id: number) {
 
     console.log('starting main script with reload duration of', state.intervalDuration);
       let shouldStop = false;
-      await sleep(50);
+      await sleep(100);
       for (const action of state.actions) {
         const d = new Date();
         console.log(`loop iteration ${d.toISOString()}`);
@@ -35,15 +35,12 @@ async function handleInterval(id: number) {
             (<any>window).chrome.runtime.sendMessage({ type: "notification", url: window.location.host });
           }
         }
-        await sleep(50);
+        await sleep(100);
       }
 
       (<any>window).chrome.storage.local.get(`${id}`, (data: any) => {
         const state = data[id];
         if (!state || !state.intervalDuration || !state.isActive) return;
-
-        const now = new Date();
-        state.lastRefresh = now.toISOString();
         state.isActive = !shouldStop;
         const newState = {} as any;
         newState[id] = state;

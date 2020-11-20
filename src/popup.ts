@@ -1,6 +1,5 @@
 type State = {
   intervalDuration: number;
-  lastRefresh: string | null;
   visibleContent: 'overview' | 'action';
   actions: Action[];
   isActive: boolean;
@@ -14,14 +13,13 @@ type Action = {
 
 const state: State = {
   intervalDuration: 30,
-  lastRefresh: null,
   isActive: false,
   visibleContent: 'overview',
   actions: []
 };
 
-function handleError() {
-  console.error('something went wrong!');
+function handleError(err?: string) {
+  console.error(`something went wrong! ${err}`);
 }
 
 function renderAction(action: Action, targetNode: HTMLElement) {
@@ -66,7 +64,6 @@ function renderState () {
   const actionList = document.getElementById('action-list');
   const refreshCountdown = document.getElementById('refresh-countdown');
   const intervalElm = document.getElementById('interval-input') as HTMLInputElement;
-  const timer = document.getElementById('timer');
 
   if (
     !overview ||
@@ -77,10 +74,9 @@ function renderState () {
     !actionPlaceholder ||
     !refreshCountdown ||
     !btnRowActive ||
-    !intervalElm ||
-    !timer
+    !intervalElm
   ) {
-    handleError();
+    handleError('missing element in render state');
     return;
   }
 
@@ -141,7 +137,7 @@ function addActionHandler () {
   const stopDropdown = document.getElementById('action-stop-select') as HTMLInputElement;
 
   if (!selectorInputElm || !typeDropdown || !stopDropdown) {
-    handleError()
+    handleError('missing an element when adding action handlers')
     return;
   }
 
@@ -176,7 +172,7 @@ function installEventListeners () {
   const stopButton = document.getElementById('stop-btn');
 
   if (!addActionButton || !toggleActionView || !cancelAddActionButton || !runButton || !stopButton) {
-    handleError();
+    handleError('Missing element when installing event listeners');
     return;
   }
 
@@ -188,52 +184,12 @@ function installEventListeners () {
   stopButton.addEventListener('click', handleStop);
 }
 
-function getDifferenceInSeconds () {
-  const end = new Date(state.lastRefresh || '').getTime() + state.intervalDuration;
-  const start = new Date().getTime();
-  const diff = start - end;
-  const diffInSeconds = state.intervalDuration - Math.floor(diff / 1000 % 60);
-  console.log(diffInSeconds);
-  if (diffInSeconds < 0) {
-    return '0';
-  } else {
-    return diffInSeconds.toString();
-  }
-}
-
-function startTimer() {
-  const timer = document.getElementById('timer');
-
-  if (!timer) {
-    handleError();
-    return;
-  }
-
-  const diff = getDifferenceInSeconds();
-  timer.innerText = diff;
-
-  const interval = window.setInterval(() => {
-    const query = { active: true, currentWindow: true };
-    (<any>window).chrome.tabs.query(query, (tabs: any[]) => {
-      const selectedTab = tabs[0];
-      (<any>window).chrome.storage.local.get([`${selectedTab.id}`], function (data: any) {
-        state.lastRefresh = data[selectedTab.id].lastRefresh;
-        if (!data[selectedTab.id].isActive) {
-          window.clearInterval(interval);
-          state.isActive = false;
-          renderState();
-        }
-      });
-    });
-    const diff = getDifferenceInSeconds();
-    timer.innerText = diff;
-  }, 1000)
-}
 
 function handleRun () {
+  console.log('starting run');
   const intervalElm = document.getElementById('interval-input') as HTMLInputElement;
   if (!intervalElm) {
-    handleError()
+    handleError('did not find interval elm when starting a run')
     return;
   }
 
@@ -242,9 +198,6 @@ function handleRun () {
     const selectedTab = tabs[0];
     state.isActive = true;
     console.log('updating the active tab id', state);
-    const now = new Date();
-    state.lastRefresh = now.toISOString();
-    startTimer();
     renderState();
     (<any>window).chrome.tabs.executeScript(selectedTab.id,  {
       file: `reload.js`
@@ -276,9 +229,6 @@ function setup () {
     (<any>window).chrome.storage.local.get([`${selectedTab.id}`], function (data: any) {
       console.log(data);
       Object.assign(state, data[selectedTab.id]);
-      if (state.isActive) {
-        startTimer();
-      }
       renderState();
     });
   });

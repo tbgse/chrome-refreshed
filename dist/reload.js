@@ -11,7 +11,7 @@ async function handleInterval(id) {
             return;
         console.log('starting main script with reload duration of', state.intervalDuration);
         let shouldStop = false;
-        await sleep(1000);
+        await sleep(100);
         for (const action of state.actions) {
             const d = new Date();
             console.log(`loop iteration ${d.toISOString()}`);
@@ -35,14 +35,12 @@ async function handleInterval(id) {
                     window.chrome.runtime.sendMessage({ type: "notification", url: window.location.host });
                 }
             }
-            await sleep(1000);
+            await sleep(100);
         }
         window.chrome.storage.local.get(`${id}`, (data) => {
             const state = data[id];
             if (!state || !state.intervalDuration || !state.isActive)
                 return;
-            const now = new Date();
-            state.lastRefresh = now.toISOString();
             state.isActive = !shouldStop;
             const newState = {};
             newState[id] = state;
@@ -50,7 +48,7 @@ async function handleInterval(id) {
             if (!shouldStop) {
                 window.setTimeout(() => {
                     window.location.reload();
-                }, state.intervalDuration * 1000);
+                }, state.intervalDuration * 500);
             }
         });
     });
